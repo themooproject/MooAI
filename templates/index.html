@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MooAI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            background: #fafafa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header minimalista */
+        header {
+            background: #ffffff;
+            padding: 16px 24px;
+            border-bottom: 1px solid #eaeaea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            letter-spacing: -0.3px;
+        }
+
+        header span {
+            font-weight: 400;
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        /* Container principal */
+        .chatarea {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            padding: 20px 24px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Área de mensagens */
+        .mensagens {
+            flex: 1;
+            margin-bottom: 16px;
+            padding: 10px 5px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .mensagens::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .mensagens::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .mensagens::-webkit-scrollbar-thumb {
+            background: #d0d0d0;
+            border-radius: 10px;
+        }
+
+        .mensagem {
+            padding: 10px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mensagem.usuario {
+            background: #e9e9e9;
+            color: #1a1a1a;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .mensagem.bot {
+            background: #f5f5f5;
+            color: #1a1a1a;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .mensagem.bot::before {
+            content: '🐮 ';
+        }
+
+        /* Barra de input */
+        .grupo-botoes {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-top: 1px solid #eaeaea;
+            background: #fafafa;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        /* Formulário principal */
+        .grupo-botoes form {
+            margin: 0;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .grupo-botoes form:first-child {
+            flex: 1;
+        }
+
+        .grupo-botoes form:last-child {
+            flex-shrink: 0;
+        }
+
+        .chatarea input[type="text"] {
+            flex: 1;
+            padding: 14px 20px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            font-size: 1rem;
+            outline: none;
+            background: #ffffff;
+            transition: border-color 0.2s;
+            font-family: inherit;
+            min-width: 100px;
+            width: 100%;
+        }
+
+        .chatarea input[type="text"]:focus {
+            border-color: #999;
+        }
+
+        .chatarea input[type="text"]::placeholder {
+            color: #aaa;
+        }
+
+        .chatarea button {
+            padding: 14px 28px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #ffffff;
+            color: #1a1a1a;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .chatarea button:hover {
+            background: #f0f0f0;
+            border-color: #bbb;
+        }
+
+        .chatarea button:active {
+            transform: scale(0.97);
+        }
+
+        .chatarea button[type="submit"] {
+            background: #1a1a1a;
+            color: #ffffff;
+            border-color: #1a1a1a;
+        }
+
+        .chatarea button[type="submit"]:hover {
+            background: #333;
+            border-color: #333;
+        }
+
+        .chatarea .grupo-botoes form:last-child button {
+            background: transparent;
+            color: #888;
+            border-color: transparent;
+            padding: 14px 20px;
+        }
+
+        .chatarea .grupo-botoes form:last-child button:hover {
+            background: #f0f0f0;
+            border-color: #ddd;
+            color: #555;
+        }
+
+        /* Mensagem vazia */
+        .mensagens p {
+            text-align: center;
+            color: #bbb;
+            padding: 40px 20px;
+            font-size: 0.95rem;
+            align-self: center;
+            margin: auto;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            header {
+                padding: 12px 16px;
+            }
+
+            header h1 {
+                font-size: 1rem;
+            }
+
+            header span {
+                font-size: 0.75rem;
+            }
+
+            .chatarea {
+                padding: 16px 16px;
+            }
+
+            .mensagem {
+                max-width: 90%;
+                font-size: 0.9rem;
+                padding: 8px 14px;
+            }
+
+            .grupo-botoes {
+                gap: 8px;
+                padding: 10px 0;
+                flex-wrap: wrap;
+            }
+
+            .grupo-botoes form {
+                gap: 8px;
+            }
+
+            .chatarea input[type="text"] {
+                padding: 12px 16px;
+                font-size: 0.95rem;
+                border-radius: 20px;
+                min-width: 80px;
+            }
+
+            .chatarea button {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+                border-radius: 20px;
+            }
+
+            .chatarea .grupo-botoes form:last-child button {
+                padding: 12px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chatarea {
+                padding: 12px 12px;
+            }
+
+            .chatarea button {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+
+            .chatarea input[type="text"] {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+                min-width: 60px;
+            }
+
+            .mensagem {
+                font-size: 0.85rem;
+                padding: 8px 12px;
+                max-width: 95%;
+            }
+
+            .grupo-botoes {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .grupo-botoes form:first-child {
+                flex-wrap: wrap;
+            }
+
+            .grupo-botoes form:last-child {
+                width: 100%;
+            }
+
+            .chatarea .grupo-botoes form:last-child button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🐮 MooAI</h1>
+        <span>Frontend do Ollama</span>
+    </header>
+
+    <div class="chatarea">
+        <div class="mensagens">
+            {% if mensagens %}
+                {% for msg in mensagens %}
+                    <div class="mensagem {{ msg.tipo }}">
+                        {{ msg.texto }}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Comece a conversar com o Ollama usando o MooAI 🐮</p>
+            {% endif %}
+        </div>
+        <div class="grupo-botoes">
+            <form action="/generate" method="POST">
+                <input 
+                    type="text" 
+                    name="prompt" 
+                    placeholder="Digite sua mensagem..."
+                    required
+                    autofocus
+                >
+                <button type="submit">Enviar</button>
+            </form>
+            <form action="/clear">
+                <button type="submit">Limpar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
